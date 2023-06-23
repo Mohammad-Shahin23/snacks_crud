@@ -2,9 +2,12 @@
 
 {% block content%}
     <h1> snack list</h1>
-    <h2>{{snacks}}</h2>
+    <button><a href="{% url 'snacks_create' %}">Create</a></button>
+    <!-- <h2>{{snacks}}</h2> -->
     {% for snack in snacks %}
          <h2><a href="{% url 'snacks_details' snack.pk %}">{{snack.name}}</a></h2>
+         <button><a href="{% url 'snacks_update' snack.pk %}">Update</a></button>
+         <button><a href="{% url 'snacks_delete' snack.pk %}">Delete</a></button>
     {% endfor %}
     
 {% endblock content%}

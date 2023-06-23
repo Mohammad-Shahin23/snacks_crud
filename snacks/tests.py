@@ -1,44 +1,42 @@
 
 # Create your tests here.
 from django.contrib.auth import get_user_model
-from django.test import TestCase, SimpleTestCase
+from django.test import TestCase
 from django.urls import reverse
 from .models import Snacks
 
 
+
 class SnackssTests(TestCase):
-    def setUp(self):
-        reviewer = get_user_model().objects.create(username="tester",password="tester")
-        Snacks.objects.create(name="rake", purchaser=reviewer)
+   
+    def setup(self):
+        self.user = get_user_model().objects.create_user(
+            username = 'test',
+            email = 'test@gmail.com',
+            ps = '1234',
+        )
+        self.snack = Snacks.objects.create(
+            name ='chips',
+            description  = "good",
+            purchaser = self.user, 
+        )
+    
+    def test_str_method(self):
+        self.assertEqual(str(self.snack),"test")
 
-    def test_list_page_status_code(self):
-        url = reverse('snacks')
+    def test_detail_view(self):
+        url = reverse('snacks_details', args=[self.snack.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response,'snacks_details.html')
 
-    def test_list_page_template(self):
-        url = reverse('snacks')
-        response = self.client.get(url)
-        self.assertTemplateUsed(response, 'snacks.html')
-        self.assertTemplateUsed(response, 'base.html')
+    def test_create_view(self):
+        obj={
+            'name':"test2",
+            'description'  : "good",
+            'purchaser' : self.user.id, 
+        }
 
-    # def test_list_page_context(self):
-    #     url = reverse('snacks')
-    #     response = self.client.get(url)
-    #     Snacks = response.context['snacks']
-    #     self.assertEqual(len(Snacks), 1)
-    #     self.assertEqual(Snacks[0].name, "rake")
-    #     self.assertEqual(Snacks[0].description, 0)
-    #     self.assertEqual(Snacks[0].reviewer.username, "tester")
-
-    def test_detail_page_status_code(self):
-        url = reverse('snacks_details',args=(1,))
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-    def test_detail_page_template(self):
-        url = reverse('snacks_details',args=(1,))
-        response = self.client.get(url)
-        self.assertTemplateUsed(response, 'snacks_details.html')
-        self.assertTemplateUsed(response, 'base.html')
-
+        url = reverse('snacks_create')
+        response = self.client.post(path=url,data=obj,follow=True)
+        # self.assertEqual(len(Thing.objects.all()),2)
+        self.assertRedirects(response, reverse('snacks_details', args=[2]))
